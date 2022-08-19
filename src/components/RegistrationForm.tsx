@@ -1,9 +1,10 @@
-import React, { useCallback, useState, useRef, ReactNode } from "react";
 import clsx from "clsx";
-import HCaptcha from "@hcaptcha/react-hcaptcha";
-import Moralis from "moralis/types";
-import { toast } from "react-toastify";
+import Moralis from "moralis";
+import { Moralis as MoralisTypes } from "moralis/types";
+import React, { useCallback, useState, useRef, ReactNode } from "react";
 import { useMoralis } from "react-moralis";
+import { toast } from "react-toastify";
+import HCaptcha from "@hcaptcha/react-hcaptcha";
 
 import useUser from "../hooks/UserContext";
 
@@ -65,7 +66,7 @@ export default function RegistrationForm({ handles, wardens, className }) {
   const [isValidDiscord, setIsValidDiscord] = useState<boolean>(true);
   const [status, setStatus] = useState<FormStatus>(FormStatus.Unsubmitted);
   const [errorMessage, setErrorMessage] = useState<string | ReactNode>("");
-  const [isDangerousUsername, setisDangerousUsername] = useState<boolean>(
+  const [isDangerousUsername, setIsDangerousUsername] = useState<boolean>(
     false
   );
   const [captchaToken, setCaptchaToken] = useState<string>("");
@@ -124,7 +125,7 @@ export default function RegistrationForm({ handles, wardens, className }) {
       setIsValidDiscord(discordUsernameRegex.test(value));
     }
     if (name === "username") {
-      setisDangerousUsername(value.match(/^[0-9a-zA-Z_\-]+$/) === null);
+      setIsDangerousUsername(value.match(/^[0-9a-zA-Z_\-]+$/) === null);
     }
   }, []);
 
@@ -156,7 +157,7 @@ export default function RegistrationForm({ handles, wardens, className }) {
   };
 
   const submitRegistration = useCallback(
-    (provider: Moralis.Web3ProviderType = "metamask") => {
+    (provider: MoralisTypes.Web3ProviderType = "metamask") => {
       const url = `/.netlify/functions/register-warden`;
       (async () => {
         if (
@@ -253,6 +254,10 @@ export default function RegistrationForm({ handles, wardens, className }) {
               user.set("emailAddress", state.emailAddress);
               // @todo: add role
               await user.save();
+              await Moralis.Cloud.run("addPaymentAddress", {
+                address: polygonAddress,
+                chain: "polygon",
+              });
               setStatus(FormStatus.Submitted);
             } catch (error) {
               setStatus(FormStatus.Error);

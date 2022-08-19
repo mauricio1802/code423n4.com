@@ -224,8 +224,8 @@ export default function ConfirmAccount() {
             />
             <div className={styles.DividingLine}></div>
             <h2 className={styles.Heading2}>User Information</h2>
-            <span className={inputStyles.Label}>Login Addresses:</span>
-            <ul>
+            <span className={inputStyles.Label}>Login Addresses</span>
+            <ul className={styles.List}>
               {authAddresses.map((address) => (
                 <li>{address}</li>
               ))}
